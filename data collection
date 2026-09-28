@@ -1,0 +1,84 @@
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <string>
+
+using namespace std;
+
+bool fileIsEmpty(const string& filename) {
+    ifstream file(filename, ios::ate);
+
+    if (!file.is_open()) {
+        return true;
+    }
+
+    return file.tellg() == 0;
+}
+
+string escapeCsv(const string& value) {
+    string result = "\"";
+
+    for (char ch : value) {
+        if (ch == '"') {
+            result += "\"\"";
+        } else {
+            result += ch;
+        }
+    }
+
+    result += "\"";
+    return result;
+}
+
+int main() {
+    const string filename = "collected_data.csv";
+
+    string name;
+    string email;
+    string city;
+    int age;
+
+    cout << "=== Data Collection System ===\n\n";
+
+    cout << "Enter full name: ";
+    getline(cin, name);
+
+    cout << "Enter age: ";
+    while (!(cin >> age) || age <= 0 || age > 150) {
+        cout << "Invalid age. Please enter a valid age: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    cout << "Enter email: ";
+    getline(cin, email);
+
+    cout << "Enter city: ";
+    getline(cin, city);
+
+    bool addHeader = fileIsEmpty(filename);
+
+    ofstream file(filename, ios::app);
+
+    if (!file.is_open()) {
+        cerr << "Error: Could not open the data file.\n";
+        return 1;
+    }
+
+    if (addHeader) {
+        file << "Name,Age,Email,City\n";
+    }
+
+    file << escapeCsv(name) << ","
+         << age << ","
+         << escapeCsv(email) << ","
+         << escapeCsv(city) << "\n";
+
+    file.close();
+
+    cout << "\nData saved successfully to " << filename << ".\n";
+
+    return 0;
+}
